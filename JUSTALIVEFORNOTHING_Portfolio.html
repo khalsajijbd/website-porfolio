@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JUSTALIVEFORNOTHING — The Codex</title>
+<link href="https://fonts.googleapis.com/css2?family=Uncial+Antiqua&family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&display=swap" rel="stylesheet"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --parch:#f5ead0;--parch2:#ede0bc;--parch3:#d9c99a;
+  --ink:#2a1f0e;--ink2:#4a3520;--ink3:#6b4f2e;
+  --red:#7a1c1c;--gold:#8a6a20;--border:#8a6a20;
+}
+html,body{margin:0;padding:0;width:100%;height:100%;overflow-x:hidden;}
+body{
+  font-family:'IM Fell English',serif;
+  color:var(--ink);
+  background:#1a1208;
+  min-height:100vh;
+  display:block;
+}
+.book{
+  min-height:100vh;
+  background:var(--parch);
+  position:relative;
+  overflow-x:hidden;
+}
+.book::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='t'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23t)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:0;opacity:0.5;
+}
+.cracks{position:fixed;inset:0;pointer-events:none;z-index:2;width:100%;height:100%;}
+.book-border{position:fixed;inset:0;border:3px solid var(--border);z-index:10;pointer-events:none;}
+.book-border::before{content:'';position:absolute;inset:10px;border:1px solid var(--parch3);}
+.book-border::after{content:'';position:absolute;inset:15px;border:1px solid rgba(138,106,32,0.3);}
+.corner{position:fixed;width:44px;height:44px;z-index:11;pointer-events:none;color:var(--gold);font-size:30px;line-height:1;}
+.corner.tl{top:6px;left:6px;}
+.corner.tr{top:6px;right:6px;transform:scaleX(-1);}
+.corner.bl{bottom:6px;left:6px;transform:scaleY(-1);}
+.corner.br{bottom:6px;right:6px;transform:scale(-1);}
+
+.book-inner{
+  position:relative;z-index:1;
+  width:100%;overflow-x:hidden;
+  padding:52px 10vw 80px;
+}
+
+/* NAV */
+.chapter-nav{
+  display:flex;justify-content:center;gap:0;
+  margin-bottom:52px;
+  border-top:1px solid var(--parch3);
+  border-bottom:1px solid var(--parch3);
+}
+.chapter-btn{
+  font-family:'IM Fell English SC',serif;
+  font-size:12px;letter-spacing:0.06em;
+  color:var(--ink3);background:transparent;
+  border:none;cursor:pointer;
+  padding:12px 28px;
+  border-right:1px solid var(--parch3);
+  transition:color 0.2s,background 0.2s;
+  text-transform:uppercase;
+}
+.chapter-btn:last-child{border-right:none;}
+.chapter-btn:hover,.chapter-btn.active{color:var(--red);background:rgba(122,28,28,0.05);}
+
+/* PAGES */
+.page{display:none;}
+.page.active{display:block;}
+
+/* DROP CAP */
+.dropcap::first-letter{
+  font-family:'Uncial Antiqua',serif;
+  font-size:5rem;line-height:0.8;
+  float:left;margin:4px 10px 0 0;
+  color:var(--red);
+}
+
+/* TITLES */
+.chapter-title{
+  font-family:'Uncial Antiqua',serif;
+  font-size:clamp(2rem,4vw,3.2rem);
+  color:var(--red);text-align:center;
+  letter-spacing:0.04em;line-height:1.2;margin-bottom:8px;
+}
+.chapter-subtitle{
+  font-family:'IM Fell English SC',serif;
+  font-size:12px;letter-spacing:0.12em;
+  color:var(--ink3);text-align:center;
+  text-transform:uppercase;margin-bottom:36px;
+}
+.ruled{display:flex;align-items:center;gap:12px;margin:28px 0;color:var(--gold);}
+.ruled-line{flex:1;height:1px;background:var(--parch3);}
+.ruled-sym{font-size:16px;}
+
+/* BODY TEXT */
+.scroll-text{
+  font-size:1.08rem;line-height:1.95;
+  color:var(--ink2);margin-bottom:20px;
+}
+.scroll-text em{color:var(--red);font-style:italic;}
+.scroll-text strong{color:var(--ink);font-weight:400;}
+
+/* HOME */
+.crest{text-align:center;margin-bottom:24px;font-size:56px;line-height:1;filter:sepia(0.4);}
+.home-name{
+  font-family:'Uncial Antiqua',serif;
+  font-size:clamp(2.8rem,6vw,5.5rem);
+  color:var(--ink);text-align:center;
+  line-height:1.05;letter-spacing:0.04em;margin-bottom:10px;
+}
+.home-name span{color:var(--red);}
+.home-decree{
+  font-family:'IM Fell English SC',serif;
+  font-size:12px;letter-spacing:0.14em;
+  color:var(--ink3);text-align:center;
+  text-transform:uppercase;margin-bottom:44px;
+}
+.chapter-cards{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;border:1px solid var(--parch3);
+  background:var(--parch3);margin-top:40px;
+}
+.chapter-card{
+  background:var(--parch);padding:30px 26px;
+  cursor:pointer;border:none;text-align:left;
+  width:100%;transition:background 0.2s;
+  font-family:'IM Fell English',serif;
+}
+.chapter-card:hover{background:var(--parch2);}
+.cc-roman{font-family:'IM Fell English SC',serif;font-size:11px;color:var(--gold);letter-spacing:0.1em;margin-bottom:8px;display:block;}
+.cc-title{font-family:'Uncial Antiqua',serif;font-size:1.05rem;color:var(--red);margin-bottom:6px;}
+.cc-desc{font-size:13px;color:var(--ink3);font-style:italic;line-height:1.5;}
+.seal{text-align:center;margin-top:52px;font-family:'IM Fell English SC',serif;font-size:11px;color:var(--ink3);letter-spacing:0.1em;}
+.seal-dot{color:var(--gold);}
+
+/* SERVICES */
+.service-entry{padding:26px 0;border-bottom:1px solid var(--parch3);}
+.service-entry:last-child{border-bottom:none;}
+.se-header{display:flex;align-items:baseline;gap:16px;margin-bottom:10px;}
+.se-roman{font-family:'IM Fell English SC',serif;font-size:11px;color:var(--gold);letter-spacing:0.08em;min-width:28px;}
+.se-title{font-family:'Uncial Antiqua',serif;font-size:1.2rem;color:var(--ink);}
+.se-body{font-size:1rem;line-height:1.85;color:var(--ink2);padding-left:44px;margin-bottom:12px;}
+.se-runes{display:flex;flex-wrap:wrap;gap:6px;padding-left:44px;}
+.rune{font-family:'IM Fell English SC',serif;font-size:10px;letter-spacing:0.06em;padding:3px 10px;border:1px solid var(--parch3);color:var(--ink3);background:rgba(0,0,0,0.03);}
+
+/* SKILLS */
+.lore-section{margin-bottom:36px;}
+.lore-heading{font-family:'IM Fell English SC',serif;font-size:11px;letter-spacing:0.1em;color:var(--gold);text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--parch3);}
+.lore-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.lore-tag{font-size:13px;color:var(--ink2);padding:6px 14px;border:1px solid var(--parch3);background:rgba(0,0,0,0.02);transition:background 0.2s;}
+.lore-tag:hover{background:var(--parch2);}
+.chronicle-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--parch3);background:var(--parch3);margin-top:8px;}
+.chronicle-cell{background:var(--parch);padding:22px;}
+.chronicle-val{font-family:'Uncial Antiqua',serif;font-size:1.9rem;color:var(--red);margin-bottom:4px;line-height:1;}
+.chronicle-label{font-size:12px;color:var(--ink3);font-style:italic;line-height:1.5;}
+
+/* ABOUT */
+.about-verse{font-size:1.08rem;line-height:1.95;color:var(--ink2);margin-bottom:24px;}
+.about-verse strong{color:var(--ink);font-weight:400;}
+.about-verse em{color:var(--red);font-style:italic;}
+.codex-table{width:100%;border-collapse:collapse;margin-top:32px;font-size:13px;}
+.codex-table tr{border-bottom:1px solid var(--parch3);}
+.codex-table tr:last-child{border-bottom:none;}
+.codex-table td{padding:13px 8px;}
+.codex-table td:first-child{font-family:'IM Fell English SC',serif;font-size:11px;letter-spacing:0.08em;color:var(--gold);width:130px;vertical-align:top;padding-top:15px;}
+.codex-table td:last-child{color:var(--ink2);line-height:1.7;font-size:1rem;}
+
+/* CONTACT */
+.summon-text{font-family:'Uncial Antiqua',serif;font-size:clamp(1.7rem,3.5vw,2.6rem);color:var(--ink);line-height:1.2;margin-bottom:8px;}
+.summon-sub{font-size:1rem;color:var(--ink3);font-style:italic;margin-bottom:44px;line-height:1.75;}
+.scroll-options{border:1px solid var(--parch3);overflow:hidden;}
+.scroll-row{display:flex;justify-content:space-between;align-items:center;padding:20px 26px;border-bottom:1px solid var(--parch3);text-decoration:none;color:var(--ink);background:var(--parch);transition:background 0.2s;cursor:pointer;}
+.scroll-row:last-child{border-bottom:none;}
+.scroll-row:hover{background:var(--parch2);}
+.sr-platform{font-family:'IM Fell English SC',serif;font-size:12px;letter-spacing:0.06em;color:var(--ink);margin-bottom:3px;}
+.sr-handle{font-size:12px;color:var(--ink3);font-style:italic;}
+.sr-arrow{color:var(--gold);font-size:18px;}
+.availability-scroll{margin-top:28px;padding:18px 26px;border:1px solid var(--parch3);background:rgba(122,28,28,0.04);font-size:13px;color:var(--ink2);font-style:italic;line-height:1.6;text-align:center;}
+.avail-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#5a8a3c;margin-right:6px;vertical-align:middle;}
+.wax-seal{text-align:center;margin-top:48px;font-size:48px;opacity:0.6;}
+
+@media(max-width:700px){
+  .book-inner{padding:40px 5vw 60px;}
+  .chapter-btn{font-size:10px;padding:9px 12px;}
+  .chapter-cards,.chronicle-grid{grid-template-columns:1fr;}
+  .corner{font-size:22px;width:32px;height:32px;}
+}
+</style>
+</head>
+<body>
+<div class="book">
+
+<svg class="cracks" viewBox="0 0 1440 900" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M 60 40 L 130 110 L 100 160 L 150 230 L 115 290" stroke="rgba(0,0,0,0.1)" stroke-width="1.3" fill="none"/>
+  <path d="M 130 110 L 190 95 L 220 125" stroke="rgba(0,0,0,0.07)" stroke-width="0.8" fill="none"/>
+  <path d="M 100 160 L 55 185 L 65 225" stroke="rgba(0,0,0,0.06)" stroke-width="0.7" fill="none"/>
+  <path d="M 1380 30 L 1310 100 L 1340 165 L 1290 230 L 1325 295" stroke="rgba(0,0,0,0.09)" stroke-width="1.2" fill="none"/>
+  <path d="M 1310 100 L 1255 82 L 1230 112" stroke="rgba(0,0,0,0.06)" stroke-width="0.7" fill="none"/>
+  <path d="M 1340 165 L 1395 188 L 1385 228" stroke="rgba(0,0,0,0.05)" stroke-width="0.6" fill="none"/>
+  <path d="M 45 680 L 110 630 L 85 580 L 130 535" stroke="rgba(0,0,0,0.08)" stroke-width="1" fill="none"/>
+  <path d="M 110 630 L 165 650 L 185 620" stroke="rgba(0,0,0,0.05)" stroke-width="0.6" fill="none"/>
+  <path d="M 1390 700 L 1325 650 L 1350 600 L 1305 555" stroke="rgba(0,0,0,0.08)" stroke-width="1" fill="none"/>
+  <path d="M 1325 650 L 1275 665 L 1255 640" stroke="rgba(0,0,0,0.05)" stroke-width="0.6" fill="none"/>
+  <path d="M 22 350 L 32 420 L 18 500 L 28 575 L 15 650" stroke="rgba(0,0,0,0.06)" stroke-width="0.9" fill="none"/>
+  <path d="M 1418 300 L 1408 390 L 1422 470 L 1410 555" stroke="rgba(0,0,0,0.06)" stroke-width="0.9" fill="none"/>
+  <path d="M 500 10 L 520 55 L 505 95 L 525 140" stroke="rgba(0,0,0,0.04)" stroke-width="0.7" fill="none"/>
+  <path d="M 900 875 L 880 835 L 895 800 L 875 760" stroke="rgba(0,0,0,0.04)" stroke-width="0.7" fill="none"/>
+</svg>
+
+<div class="book-border"></div>
+<div class="corner tl">⸙</div>
+<div class="corner tr">⸙</div>
+<div class="corner bl">⸙</div>
+<div class="corner br">⸙</div>
+
+<div class="book-inner">
+
+  <nav class="chapter-nav">
+    <button class="chapter-btn active" onclick="showPage('home')" id="nav-home">Folio</button>
+    <button class="chapter-btn" onclick="showPage('services')" id="nav-services">Services</button>
+    <button class="chapter-btn" onclick="showPage('skills')" id="nav-skills">Skills</button>
+    <button class="chapter-btn" onclick="showPage('about')" id="nav-about">Chronicle</button>
+    <button class="chapter-btn" onclick="showPage('contact')" id="nav-contact">Summon</button>
+  </nav>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="crest">🏰</div>
+    <h1 class="home-name">Just<span>Alive</span><br>For Nothing</h1>
+    <p class="home-decree">Gamer &nbsp;✦&nbsp; Developer &nbsp;✦&nbsp; Creator &nbsp;✦&nbsp; Age XVII</p>
+    <div class="ruled"><div class="ruled-line"></div><span class="ruled-sym">✦</span><div class="ruled-line"></div></div>
+    <p class="scroll-text dropcap">
+      Welcome. I'm <strong>JUSTALIVEFORNOTHING</strong> — a 17-year-old developer, artist, and creator.
+      I build full-stack apps, draw manga, design avatars, and make films.
+      This here is my <em>codex</em> — a record of everything I do and everything I can make for you.
+      If you've got a project, I'd genuinely love to hear about it.
+    </p>
+    <div class="chapter-cards">
+      <button class="chapter-card" onclick="showPage('services')">
+        <span class="cc-roman">Chapter I</span>
+        <div class="cc-title">Services</div>
+        <div class="cc-desc">Everything I build and create — for you</div>
+      </button>
+      <button class="chapter-card" onclick="showPage('skills')">
+        <span class="cc-roman">Chapter II</span>
+        <div class="cc-title">Skills & Lore</div>
+        <div class="cc-desc">Tech stack and the deep well of cultural knowledge</div>
+      </button>
+      <button class="chapter-card" onclick="showPage('about')">
+        <span class="cc-roman">Chapter III</span>
+        <div class="cc-title">The Chronicle</div>
+        <div class="cc-desc">A little about the person behind the work</div>
+      </button>
+      <button class="chapter-card" onclick="showPage('contact')">
+        <span class="cc-roman">Chapter IV</span>
+        <div class="cc-title">Summon</div>
+        <div class="cc-desc">Send word — let's build something together</div>
+      </button>
+    </div>
+    <div class="seal"><span class="seal-dot">✦</span>&nbsp;&nbsp;Anno Domini MMXXV &nbsp;·&nbsp; All Rights Reserved&nbsp;&nbsp;<span class="seal-dot">✦</span></div>
+  </div>
+
+  <!-- SERVICES -->
+  <div class="page" id="page-services">
+    <h2 class="chapter-title">Chapter I</h2>
+    <p class="chapter-subtitle">Services & Commissions</p>
+    <div class="ruled"><div class="ruled-line"></div><span class="ruled-sym">✦</span><div class="ruled-line"></div></div>
+    <p class="scroll-text">Here's what I do. Each one is something I genuinely care about — not just a service on a list. Tell me what you need and I'll make it happen.</p>
+
+    <div class="service-entry">
+      <div class="se-header"><span class="se-roman">I.</span><span class="se-title">Full Stack Development</span></div>
+      <p class="se-body">Websites, web apps, mobile apps, backends — built end to end, just the way you want them. Any stack. I don't turn down a project because of an unfamiliar tool — I <em>learn it</em>, and I learn it properly.</p>
+      <div class="se-runes"><span class="rune">React</span><span class="rune">Node.js</span><span class="rune">Mobile</span><span class="rune">Databases</span><span class="rune">APIs</span></div>
+    </div>
+
+    <div class="service-entry">
+      <div class="se-header"><span class="se-roman">II.</span><span class="se-title">Avatar Creation</span></div>
+      <p class="se-body">Your character, your identity — drawn the way you've always pictured it. VTuber rigs, profile art, character sheets. I put real thought into every design, not just a quick sketch.</p>
+      <div class="se-runes"><span class="rune">Character Design</span><span class="rune">VTuber</span><span class="rune">Profile Art</span></div>
+    </div>
+
+    <div class="service-entry">
+      <div class="se-header"><span class="se-roman">III.</span><span class="se-title">Video Translation</span></div>
+      <p class="se-body">Your content, faithfully carried into another tongue. I translate with cultural awareness — not word-for-word stiffness — so the <em>feeling</em> of your work reaches the new audience intact.</p>
+      <div class="se-runes"><span class="rune">Localization</span><span class="rune">Subtitles</span><span class="rune">Dubbing</span></div>
+    </div>
+
+    <div class="service-entry">
+      <div class="se-header"><span class="se-roman">IV.</span><span class="se-title">Manga & Webcomic</span></div>
+      <p class="se-body">Your story, panel by panel. Original manga and webtoons — from the very first sketch to the finished page. I've read enough to know what works, and I genuinely love making them.</p>
+      <div class="se-runes"><span class="rune">Manga</span><span class="rune">Webtoon</span><span class="rune">Storyboard</span><span class="rune">Panelling</span></div>
+    </div>
+
+    <div class="service-entry">
+      <div class="se-header"><span class="se-roman">V.</span><span class="se-title">Film & Moving Pictures</span></div>
+      <p class="se-body">Short films, animations, video projects — concept to final cut. I care about storytelling, not just the technical side. If you have a vision, let's put it on screen.</p>
+      <div class="se-runes"><span class="rune">Short Film</span><span class="rune">Animation</span><span class="rune">Editing</span></div>
+    </div>
+
+    <div class="service-entry">
+      <div class="se-header"><span class="se-roman">VI.</span><span class="se-title">Content Creation</span></div>
+      <p class="se-body">Gaming content, reviews, commentary — fuelled by 25,000+ anime episodes and a lifetime spent with games and films. The knowledge is real, and it shows in the work.</p>
+      <div class="se-runes"><span class="rune">Gaming</span><span class="rune">Reviews</span><span class="rune">Commentary</span></div>
+    </div>
+  </div>
+
+  <!-- SKILLS -->
+  <div class="page" id="page-skills">
+    <h2 class="chapter-title">Chapter II</h2>
+    <p class="chapter-subtitle">Skills, Lore & Mastered Arts</p>
+    <div class="ruled"><div class="ruled-line"></div><span class="ruled-sym">✦</span><div class="ruled-line"></div></div>
+
+    <div class="lore-section">
+      <div class="lore-heading">Frontend</div>
+      <div class="lore-tags"><span class="lore-tag">React</span><span class="lore-tag">Next.js</span><span class="lore-tag">Vue</span><span class="lore-tag">HTML & CSS</span><span class="lore-tag">JavaScript</span><span class="lore-tag">TypeScript</span><span class="lore-tag">Tailwind</span></div>
+    </div>
+    <div class="lore-section">
+      <div class="lore-heading">Backend</div>
+      <div class="lore-tags"><span class="lore-tag">Node.js</span><span class="lore-tag">Express</span><span class="lore-tag">Python</span><span class="lore-tag">REST APIs</span><span class="lore-tag">Firebase</span><span class="lore-tag">MySQL</span><span class="lore-tag">MongoDB</span></div>
+    </div>
+    <div class="lore-section">
+      <div class="lore-heading">Creative</div>
+      <div class="lore-tags"><span class="lore-tag">Manga Art</span><span class="lore-tag">Avatar Design</span><span class="lore-tag">Video Editing</span><span class="lore-tag">Storyboarding</span><span class="lore-tag">Translation</span><span class="lore-tag">Webtoon</span></div>
+    </div>
+    <div class="lore-section">
+      <div class="lore-heading">The thing that sets me apart</div>
+      <div class="lore-tags"><span class="lore-tag">Learn any tool for your project</span><span class="lore-tag">Ship solo, end to end</span><span class="lore-tag">Deep cultural knowledge</span></div>
+    </div>
+
+    <div class="ruled"><div class="ruled-line"></div><span class="ruled-sym">✦</span><div class="ruled-line"></div></div>
+    <p class="chapter-subtitle" style="margin-bottom:16px;">The <em style="font-style:italic;color:var(--red);">verily</em> unhinged consumption record</p>
+    <div class="chronicle-grid">
+      <div class="chronicle-cell"><div class="chronicle-val">25,000+</div><div class="chronicle-label">Anime episodes watched. No hentai — pure taste, I promise.</div></div>
+      <div class="chronicle-cell"><div class="chronicle-val">∞</div><div class="chronicle-label">Screen time. Maxed out. No regrets, not a single one.</div></div>
+      <div class="chronicle-cell"><div class="chronicle-val">Nearly all</div><div class="chronicle-label">Movies and shows consumed — genuinely, it's a lot.</div></div>
+      <div class="chronicle-cell"><div class="chronicle-val">Most</div><div class="chronicle-label">Games played across every genre and era.</div></div>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <div class="page" id="page-about">
+    <h2 class="chapter-title">Chapter III</h2>
+    <p class="chapter-subtitle">The Chronicle — A little about me</p>
+    <div class="ruled"><div class="ruled-line"></div><span class="ruled-sym">✦</span><div class="ruled-line"></div></div>
+
+    <p class="about-verse dropcap">
+      I'm <strong>JUSTALIVEFORNOTHING</strong>. I'm 17, I'm self-taught, and I genuinely love building things.
+      No course gave me this. No mentor sat me down. I just started making stuff — and I didn't stop.
+      <em>That stubbornness is, honestly, my greatest asset.</em>
+    </p>
+    <p class="about-verse">
+      I think what makes me a bit different is the cultural side. I've watched over <strong>25,000 anime episodes</strong>,
+      played through more games than I can count, and seen most of the films worth seeing.
+      That might sound like a distraction — but for creative work, it means I have
+      <em>real taste, real references, and a genuine sense of what lands.</em>
+      It shows up in the work.
+    </p>
+    <p class="about-verse">
+      My stack is genuinely everything. Frontend, backend, mobile, creative work.
+      And if your project calls for something I haven't touched yet —
+      <strong>I'll learn it properly</strong>, not fake it.
+      That's just how I've always operated.
+    </p>
+
+    <div class="ruled"><div class="ruled-line"></div><span class="ruled-sym">✦</span><div class="ruled-line"></div></div>
+    <table class="codex-table">
+      <tr><td>Age</td><td>17 years old</td></tr>
+      <tr><td>Training</td><td>Self-taught — no guild, no tutor, just building</td></tr>
+      <tr><td>Disciplines</td><td>Development, art, film, translation, content creation</td></tr>
+      <tr><td>Status</td><td><span class="avail-dot"></span>Open for projects and commissions right now</td></tr>
+      <tr><td>Creed</td><td>If I don't know it yet, I'll <em style="color:var(--red)">learn it</em> — fully, for you</td></tr>
+    </table>
+  </div>
+
+  <!-- CONTACT -->
+  <div class="page" id="page-contact">
+    <h2 class="chapter-title">Chapter IV</h2>
+    <p class="chapter-subtitle">Summon — Send word, let's build</p>
+    <div class="ruled"><div class="ruled-line"></div><span class="ruled-sym">✦</span><div class="ruled-line"></div></div>
+
+    <p class="summon-text">Got a project?<br>Let's actually talk.</p>
+    <p class="summon-sub">
+      I'm open for commissions and collabs right now — websites, manga, avatars, films, anything.
+      Reach out wherever feels natural. I reply fast, I promise. <em>No ghosting, no vague replies.</em>
+    </p>
+
+    <div class="scroll-options">
+      <a href="mailto:goonerlogy@gmail.com" class="scroll-row">
+        <div><div class="sr-platform">Email — The Raven Post</div><div class="sr-handle">goonerlogy@gmail.com</div></div>
+        <span class="sr-arrow">→</span>
+      </a>
+      <a href="https://discord.com/users/justalivefornothing" target="_blank" rel="noopener" class="scroll-row">
+        <div><div class="sr-platform">Discord — The Tavern</div><div class="sr-handle">justalivefornothing</div></div>
+        <span class="sr-arrow">→</span>
+      </a>
+      <a href="https://www.instagram.com/unemployed_bitchless_loser" target="_blank" rel="noopener" class="scroll-row">
+        <div><div class="sr-platform">Instagram</div><div class="sr-handle">@unemployed_bitchless_loser</div></div>
+        <span class="sr-arrow">→</span>
+      </a>
+    </div>
+
+    <div class="availability-scroll">
+      <span class="avail-dot"></span>
+      <em>Currently available — genuinely happy to hear from you, whatever the project size</em>
+    </div>
+    <div class="wax-seal">🪬</div>
+  </div>
+
+</div>
+</div>
+
+<script>
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.chapter-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
